@@ -16,7 +16,7 @@ VIDEO_SETS = {
         # "BAACAgIAAxkBAAMFaLwnYcxRR03m9z3G8F8WKgdFM00AAsyHAALzatlJw8SHG-Y_jQk2BA",
     ],
     "course1": [
-        # "ВСТАВ_ТУТ_FILE_ID_3",
+        # "BAACAgIAAxkBAAMKaLwqrgsdVndDd_IJv-89xCL-zWgAAup4AAIKEuFJlD2robhaSKI2BA",
     ]
 }
 
