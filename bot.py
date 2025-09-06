@@ -2,19 +2,21 @@ import asyncio
 import logging
 import os
 import re
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile
 
 # === Налаштування ===
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
+# ВСТАВ СВОЇ file_id СЮДИ (між лапками). Можна кілька через кому.
 VIDEO_SETS = {
     "free": [
-        "https://filesamples.com/samples/video/mp4/sample_640x360.mp4"
+        "ВСТАВ_ТУТ_FILE_ID_1",
+        # "BAACAgIAAxkBAAMFaLwnYcxRR03m9z3G8F8WKgdFM00AAsyHAALzatlJw8SHG-Y_jQk2BA",
     ],
     "course1": [
-        # сюди вставиш file_id своїх відео
+        # "ВСТАВ_ТУТ_FILE_ID_3",
     ]
 }
 
@@ -28,6 +30,7 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 async def send_video_safely(chat_id: int, ref: str):
+    """Відправляє відео з file_id, URL або локального файлу."""
     try:
         is_probable_file_id = bool(re.match(r"^[A-Za-z0-9\-_]{20,}$", ref))
         is_url = ref.startswith("http://") or ref.startswith("https://")
@@ -71,12 +74,23 @@ async def help_cmd(message: Message):
     )
     await message.answer(txt, parse_mode="Markdown")
 
+# /getfileid працює і як reply на відео, і якщо відео надіслали разом з командою
 @dp.message(Command("getfileid"))
 async def get_file_id(message: Message):
-    if not message.reply_to_message or not message.reply_to_message.video:
-        await message.answer("Надішли /getfileid *у відповідь* на повідомлення з відео.", parse_mode="Markdown")
+    if message.reply_to_message and message.reply_to_message.video:
+        fid = message.reply_to_message.video.file_id
+        await message.answer(f"`{fid}`", parse_mode="Markdown")
         return
-    await message.answer(f"`{message.reply_to_message.video.file_id}`", parse_mode="Markdown")
+    if message.video:
+        fid = message.video.file_id
+        await message.answer(f"`{fid}`", parse_mode="Markdown")
+        return
+    await message.answer("Надішли відео або зроби /getfileid у відповідь на відео 🙂")
+
+# Автовідповідь: будь-яке відео → повертаємо file_id
+@dp.message(F.video)
+async def auto_file_id(message: Message):
+    await message.answer(f"`{message.video.file_id}`", parse_mode="Markdown")
 
 async def main():
     if not BOT_TOKEN:
